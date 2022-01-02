@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
+use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Providers\RouteServiceProvider;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Support\Facades\Hash;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -50,5 +54,36 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    public function loginRequest(Request $request)
+    {
+        $request->validate(['email' => ['required', 'string', 'email', Rule::exists('users')]]);
+
+        $user = User::where('email', $request->email)->first();
+
+        $user->update(['login_token' => Str::random(60)]);
+
+        // Enviar correo con el link del login
+
+        return back()->withSuccess('Te hemos enviado un email con el link para el login');
+    }
+
+    public function loginWithToken(Request $request)
+    {
+        $user = User::where('email', $request->email)->firstOrFail();
+
+        if (Hash::check($user->login_token, $request->token)) {
+
+            Auth::login($user);
+
+            $request->session()->regenerate();
+
+            $user->update(['login_token' => null]);
+
+            return redirect()->intended(RouteServiceProvider::HOME)->withSuccess('Has iniciado sesión correctamente');
+        }
+
+        return redirect()->route('login')->withDanger('El token es inválido, por favor solicítalo de nuevo');
     }
 }

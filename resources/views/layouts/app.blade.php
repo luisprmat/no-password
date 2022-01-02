@@ -29,6 +29,14 @@
 
             <!-- Page Content -->
             <main>
+                @if (session()->has('success'))
+                    <div class="pt-4">
+                        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                            <x-alert type="success">{{ session('success') }}</x-alert>
+                        </div>
+                    </div>
+                @endif
+
                 {{ $slot }}
             </main>
         </div>

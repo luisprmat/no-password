@@ -7,6 +7,12 @@ module.exports = {
         './resources/views/**/*.blade.php',
     ],
 
+    safelist: [
+        {
+            pattern: /(bg|text)-(red|green|blue|yellow|gray)-(100|700)/
+        }
+    ],
+
     theme: {
         extend: {
             fontFamily: {
