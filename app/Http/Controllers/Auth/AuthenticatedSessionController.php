@@ -60,9 +60,9 @@ class AuthenticatedSessionController extends Controller
     {
         $request->validate(['email' => ['required', 'string', 'email', Rule::exists('users')]]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::byEmail($request->email)->first();
 
-        $user->update(['login_token' => Str::random(60)]);
+        $user->generateLoginToken();
 
         // Enviar correo con el link del login
 
@@ -71,7 +71,7 @@ class AuthenticatedSessionController extends Controller
 
     public function loginWithToken(Request $request)
     {
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = User::byEmail($request->email)->firstOrFail();
 
         if (Hash::check($user->login_token, $request->token)) {
 
@@ -79,7 +79,7 @@ class AuthenticatedSessionController extends Controller
 
             $request->session()->regenerate();
 
-            $user->update(['login_token' => null]);
+            $user->deleteLoginToken();
 
             return redirect()->intended(RouteServiceProvider::HOME)->withSuccess('Has iniciado sesión correctamente');
         }

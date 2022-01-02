@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -41,4 +43,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function generateLoginToken()
+    {
+        $this->update(['login_token' => Str::random(60)]);
+    }
+
+    public function deleteLoginToken()
+    {
+        $this->update(['login_token' => null]);
+    }
+
+    public function scopeByEmail(Builder $query, string $email)
+    {
+        return $query->where('email', $email);
+    }
 }
