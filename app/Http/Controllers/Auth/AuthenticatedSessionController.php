@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Str;
+use App\Mail\LoginTokenMail;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Providers\RouteServiceProvider;
 use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Support\Facades\Hash;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -65,6 +67,7 @@ class AuthenticatedSessionController extends Controller
         $user->generateLoginToken();
 
         // Enviar correo con el link del login
+        Mail::to($user)->queue(new LoginTokenMail($user));
 
         return back()->withSuccess('Te hemos enviado un email con el link para el login');
     }
